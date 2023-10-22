@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using product_orders.Domain.Products;
 using product_orders.Infrastructure.Data;
 
 namespace product_orders.Endpoints.Categories;
