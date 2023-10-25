@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using product_orders.Endpoints.Categories;
+using product_orders.Endpoints.Employees;
 using product_orders.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,7 +14,14 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 });
 
 builder.Services
-    .AddIdentity<IdentityUser, IdentityRole>()
+    .AddIdentity<IdentityUser, IdentityRole>(options =>
+    {
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequireDigit = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequiredLength = 3;
+        options.Password.RequireLowercase = false;
+    })
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -31,5 +39,6 @@ app.UseHttpsRedirection();
 app.MapMethods(CategoryPost.Template, CategoryPost.Methods, CategoryPost.Handle);
 app.MapMethods(CategoryGetAll.Template, CategoryGetAll.Methods, CategoryGetAll.Handle);
 app.MapMethods(CategoryPut.Template, CategoryPut.Methods, CategoryPut.Handle);
+app.MapMethods(EmployeePost.Template, EmployeePost.Methods, EmployeePost.Handle);
 
 app.Run();
