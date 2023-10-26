@@ -1,5 +1,4 @@
-using Dapper;
-using Microsoft.Data.SqlClient;
+using product_orders.Infrastructure.Data;
 
 namespace product_orders.Endpoints.Employees;
 
@@ -9,17 +8,20 @@ public class EmployeeGetAll
     public static string[] Methods => new string[] { HttpMethod.Get.ToString() };
     public static Delegate Handle => Action;
 
-    public static IResult Action(int? page, int? rows, IConfiguration configuration)
+    public static async Task<IResult> Action(int? page, int? rows, QueryAllUsersWithClaimName query)
     {
-        var db = new SqlConnection(DotNetEnv.Env.GetString("DB_LOCAL"));
-        var query =
-            @"select Email, ClaimValue as Name
-            from AspNetUsers u inner
-            join AspNetUserClaims c
-            on u.id = UserId and ClaimType = 'Name'
-            order by name
-            OFFSET (@page - 1) * @rows ROWS FETCH NEXT @rows ROWS ONLY";
-        var employees = db.Query<EmployeeResponse>(query, new { page, rows });
-        return Results.Ok(employees);
+        if (page == null || rows == null || page <=0 || rows <=0)
+            return Results.BadRequest("Número da página e quantidade de linhas devem ser informadas.");
+        if (rows > 10)
+            return Results.BadRequest("Limite máximo de linhas é 10.");
+        
+        try{
+            var result = await query.Execute(page.Value, rows.Value);
+            return Results.Ok(result);
+        }
+        catch (Exception e)
+        {
+            return Results.BadRequest(e.Message);
+        }
     }
 }
